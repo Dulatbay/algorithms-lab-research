@@ -13,8 +13,9 @@ const App: React.FC = () => {
     const [coordinates, setCoordinates] = useState<Coordinate[]>([]);
     const [roads, setRoads] = useState<Road[]>([]);
     const [algorithm, setAlgorithm] = useState<string>("2Gis Api");
-    const [vehicle, setVehicle] = useState<string>("Car");
+    const [vehicle, setVehicle] = useState<string>("Driving");
     const [typeOfAlgo, setTypeOfAlgo] = useState<string>("Jam");
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     // Добавление точки
     const handleAddCoordinate = (lat: number, lon: number) => {
@@ -39,52 +40,65 @@ const App: React.FC = () => {
         );
     };
 
-    const handleCalculateRoutes = async () => {
+    const handleCalculateRoutesAsync = async () => {
         try {
-            // Формируем массив points
-            const points = coordinates.map((coord) => ({
-                lat: coord.lat,
-                lon: coord.lon,
-            }));
-            // Формируем индексы sources и targets
-            const sources = points.map((_, index) => index); // Все точки — отправления
-            const targets = points.map((_, index) => index); // Все точки — прибытия
+            setIsLoading(true);
+            // Формируем тело запроса
+            const points = coordinates.map((coord) => ({ lat: coord.lat, lon: coord.lon }));
             const requestBody = {
                 points,
-                sources,
-                targets,
+                sources: points.map((_, index) => index),
+                targets: points.map((_, index) => index),
                 transport: vehicle.toLowerCase(),
                 type: typeOfAlgo.toLowerCase(),
             };
-            console.log("Тело запроса:", requestBody);
-            const response = await fetch(
-                    `https://routing.api.2gis.com/get_dist_matrix?key=${API_KEY}&version=2.0`,
-                    {
-                        method: "POST",
-                        headers:
-                            {
-                                "Content-Type":
-                                    "application/json"
-                            }
-                        ,
-                        body: JSON.stringify(requestBody),
-                    }
-                )
-            ;
-            const data = await response.json();
-            console.log("Ответ API:", data);
-            if (data && data.routes) {
-                let newRoads: Road[] = data.routes.map((route: any) => {
-                    console.log("route", route)
-                    return {
-                        start: coordinates[sources[route.source_id]],
-                        end: coordinates[targets[route.target_id]],
-                        distance: route.distance,
-                        duration: route.duration,
-                    }
-                })
 
-                newRoads = newRoads.filter(road => road.start.id != road.end.id)
+            // Создание задачи
+            const createTaskResponse = await fetch(
+                `https://routing.api.2gis.com/async_matrix/create_task/get_dist_matrix?key=${API_KEY}&version=2.0`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(requestBody),
+                }
+            );
+            const createTaskData = await createTaskResponse.json();
+            if (!createTaskData?.task_id) throw new Error("Не удалось создать задачу.");
+
+            const taskId = createTaskData.task_id;
+
+            // Проверка статуса задачи
+            let status = "TASK_IN_QUEUE";
+            let resultLink = "";
+            while (status !== "TASK_DONE") {
+                const statusResponse = await fetch(
+                    `https://routing.api.2gis.com/async_matrix/result/get_dist_matrix/${taskId}?version=2.0&key=${API_KEY}`
+                );
+                const statusData = await statusResponse.json();
+                resultLink = statusData.result_link;
+                status = statusData.status;
+                if (status === "TASK_CANCELED") throw new Error("Задача завершилась с ошибкой.");
+                if (status === "TASK_IN_QUEUE" || status === 'TASK_IN_PROGRESS') await new Promise((resolve) => setTimeout(resolve, 5000)); // Ожидание 2 секунды
+            }
+
+            console.log(resultLink);
+
+            // Получение результата
+            const resultResponse = await fetch(resultLink);
+            const resultData = await resultResponse.json();
+
+            // Обработка результата
+            if (resultData?.routes) {
+                let newRoads: Road[] = resultData.routes.map((route: any) => ({
+                    start: coordinates[route.source_id],
+                    end: coordinates[route.target_id],
+                    distance: route.distance,
+                    duration: route.duration,
+                }));
+
+                newRoads = newRoads
+                    .filter((road) => road.start.id !== road.end.id)
+                    .sort((a, b) => b.distance - a.distance);
                 setRoads(newRoads);
             } else {
                 console.error("Маршруты не найдены.");
@@ -92,7 +106,11 @@ const App: React.FC = () => {
         } catch (err) {
             console.error("Ошибка при расчете маршрутов:", err);
         }
+        finally {
+            setIsLoading(false);
+        }
     };
+
 
 
     return (
@@ -105,13 +123,14 @@ const App: React.FC = () => {
                 <SelectedCoordinates coordinates={coordinates}
                                      handleTypeChange={handleTypeChange}
                                      handleDeleteCoordinate={handleDeleteCoordinate}
-                                     handleCalculateRoutes={handleCalculateRoutes}
+                                     handleCalculateRoutes={handleCalculateRoutesAsync}
                                      algorithm={algorithm}
                                      vehicle={vehicle}
                                      typeOfAlgo={typeOfAlgo}
                                      setAlgorithm={setAlgorithm}
                                      setVehicle={setVehicle}
                                      setTypeOfAlgo={setTypeOfAlgo}
+                                     isLoading={isLoading}
                 />
             </div>
             <Routes roads={roads} />

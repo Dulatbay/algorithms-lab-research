@@ -7,13 +7,14 @@ interface Props {
     coordinates: Coordinate[];
     handleTypeChange: (id: number, type: "warehouse" | "client") => void;
     handleDeleteCoordinate: (id: number) => void;
-    handleCalculateRoutes: () => void;
+    handleCalculateRoutes:  () => Promise<void>;
     setAlgorithm: React.Dispatch<React.SetStateAction<string>>
     setVehicle: React.Dispatch<React.SetStateAction<string>>
     setTypeOfAlgo: React.Dispatch<React.SetStateAction<string>>
     algorithm: string;
     vehicle: string;
     typeOfAlgo: string;
+    isLoading: boolean;
 }
 
 const algoMenuItems: MenuProps['items'] = [
@@ -64,7 +65,8 @@ const SelectedCoordinates = ({
                                  setTypeOfAlgo,
                                  vehicle,
                                  typeOfAlgo,
-                                 algorithm
+                                 algorithm,
+                                 isLoading,
                              }: Props) => {
 
 
@@ -90,7 +92,9 @@ const SelectedCoordinates = ({
                             size={'large'}
                             className={'min-w-40 h-9'}
                             disabled={coordinates.length === 0}
-                            onClick={handleCalculateRoutes}>SEND</Button>
+                            onClick={() => handleCalculateRoutes()}
+                            loading={isLoading}
+                    >SEND</Button>
                 </div>
                 <div className={'flex justify-between flex-wrap gap-2'}>
                     <Dropdown

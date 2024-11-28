@@ -1,16 +1,25 @@
-import {MapContainer, Marker, Polyline, TileLayer, useMap, useMapEvents} from "react-leaflet";
+import {MapContainer, Marker, Polyline, Popup, TileLayer, useMapEvents} from "react-leaflet";
 import React, {useState} from "react";
 import {API_KEY, Coordinate, Road} from "../types.ts";
 import Search from "antd/lib/input/Search";
 import {darkTheme} from "../theme.ts";
 import {Button, ConfigProvider} from "antd";
-import * as ELG from "esri-leaflet-geocoder";
+import L from "leaflet";
+
 
 interface Props {
     coordinates: Coordinate[];
     roads: Road[];
     handleAddCoordinate: (lat: number, lon: number) => void;
 }
+
+const customIcon = (type: 'warehouse' | 'client') =>
+    new L.Icon({
+        iconUrl: type == 'warehouse' ? '/w-marker.svg' : '/marker.svg', // Google Charts URL for dynamic marker
+        iconSize: [30, 42], // Adjust size if needed
+        iconAnchor: [15, 42], // Center the anchor point
+        popupAnchor: [0, -42], // Position the popup
+    });
 
 const Map = ({coordinates, roads, handleAddCoordinate}: Props) => {
     const [search, setSearch] = useState<string>("");
@@ -43,7 +52,7 @@ const Map = ({coordinates, roads, handleAddCoordinate}: Props) => {
     };
 
     return (
-        <div className={'flex-1'}>
+        <div className={'flex-1 min-w-[340px]'}>
 
             <ConfigProvider theme={darkTheme}>
                 <div className="flex w-full h-20 items-center">
@@ -63,7 +72,7 @@ const Map = ({coordinates, roads, handleAddCoordinate}: Props) => {
                 className="rounded-md overflow-hidden border-4 border-solid border-[#91898C] hover:border-[#3E3E3E] transition-all duration-200">
                 <MapContainer
                     center={[43.208, 76.669]}
-                    zoom={9}
+                    zoom={16}
                     style={{height: "400px", width: "100%"}}
                 >
                     <TileLayer
@@ -71,8 +80,18 @@ const Map = ({coordinates, roads, handleAddCoordinate}: Props) => {
                     />
                     <MapClickHandler/>
                     {coordinates.map((coord) => (
-                        <Marker key={coord.id} position={[coord.lat, coord.lon]}/>
+                        <Marker
+                            key={coord.id}
+                            position={[coord.lat, coord.lon]}
+                            icon={customIcon(coord.type)}
+                        >
+                            <Popup>
+                                Latitude: {Math.round(coord.lat * 100) / 100}, Longitude: {Math.round(coord.lon * 100) / 100} <br />
+                                Id: {coord.id}
+                            </Popup>
+                        </Marker>
                     ))}
+
                     {roads.map((road, index) => {
                         console.log(road)
                         return (

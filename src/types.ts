@@ -3,14 +3,13 @@ export interface Coordinate {
     lat: number;
     lon: number;
     type: "warehouse" | "client";
-    address: string;
 }
 
 export interface Road {
     start: Coordinate;
     end: Coordinate;
-    distance: string;
-    duration: string;
+    distance: number;
+    duration: number;
 }
 
 

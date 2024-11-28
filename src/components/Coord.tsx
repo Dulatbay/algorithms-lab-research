@@ -6,11 +6,11 @@ import {Coordinate} from "../types.ts";
 const items: MenuProps['items'] = [
     {
         key: 'W',
-        label: 'W',
+        label: 'Warehouse',
     },
     {
         key: 'C',
-        label: 'C',
+        label: 'Client',
     }
 ];
 
@@ -39,9 +39,8 @@ const Coord = ({coord, handleTypeChange, handleDeleteCoordinate}: Props) => {
                         items,
                         onClick: onTypeClick,
                         selectable: true,
-                        defaultSelectedKeys: ['3'],
                     }}
-
+                    trigger={["click"]}
                 >
                     <div className={`${currentType === 'W' ? 'text-[#5348F2]' : ''}`}>
                         {currentType}
@@ -49,7 +48,7 @@ const Coord = ({coord, handleTypeChange, handleDeleteCoordinate}: Props) => {
                 </Dropdown>
             </div>
             <div className="flex flex-col gap-1">
-                <div className={'text-xl'}>{coord.id}</div>
+                <div className={'text-xl'}>{coord.id} address</div>
                 <div className={'flex gap-2 text'}>
                     <div><span className={'text-gray-400'}>lat:</span> {Math.round(coord.lat * 1000) / 1000}</div>
                     <div><span className={'text-gray-400'}>lon:</span> {Math.round(coord.lon * 1000) / 1000}</div>

@@ -1,68 +1,136 @@
 import {Coordinate} from "../types.ts";
-import {Button} from "antd";
+import {Button, Dropdown, MenuProps} from "antd";
 import Coord from "./Coord.tsx";
+import React from "react";
 
 interface Props {
     coordinates: Coordinate[];
     handleTypeChange: (id: number, type: "warehouse" | "client") => void;
     handleDeleteCoordinate: (id: number) => void;
+    handleCalculateRoutes: () => void;
+    setAlgorithm: React.Dispatch<React.SetStateAction<string>>
+    setVehicle: React.Dispatch<React.SetStateAction<string>>
+    setTypeOfAlgo: React.Dispatch<React.SetStateAction<string>>
+    algorithm: string;
+    vehicle: string;
+    typeOfAlgo: string;
 }
 
-/*
-
- <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-4">Coordinates</h1>
-            <table className="table-auto w-full bg-white border">
-                <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Latitude</th>
-                    <th>Longitude</th>
-                    <th>Type</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {coordinates.map((coord, index) => (
-                    <tr key={coord.id}>
-                        <td>{index + 1}</td>
-                        <td>{coord.lat.toFixed(6)}</td>
-                        <td>{coord.lon.toFixed(6)}</td>
-                        <td>
-                            <select
-                                value={coord.type}
-                                onChange={(e) =>
-                                    handleTypeChange(coord.id, e.target.value as "warehouse" | "client")
-                                }
-                            >
-                                <option value="client">Client</option>
-                                <option value="warehouse">Warehouse</option>
-                            </select>
-                        </td>
-                        <td>
-                            <button
-                                onClick={() => handleDeleteCoordinate(coord.id)}
-                                className="text-red-500"
-                            >
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        </div>
+const algoMenuItems: MenuProps['items'] = [
+    {
+        key: '2Gis Api',
+        label: '2Gis Api'
+    }
+]
 
 
-*/
+const vehicleMenuItems: MenuProps['items'] = [
+    {
+        key: 'Truck',
+        label: 'Truck'
+    },
+    {
+        key: 'Driving',
+        label: 'Driving'
+    },
+    {
+        key: 'Taxi',
+        label: 'Taxi'
+    }
+]
+
+const algoTypeMenuItems: MenuProps['items'] = [
+    {
+        key: 'Jam',
+        label: 'Jam'
+    },
+    {
+        key: 'Statistics',
+        label: 'Statistics'
+    },
+    {
+        key: 'Shortest',
+        label: 'Shortest'
+    }
+]
+
+const SelectedCoordinates = ({
+                                 coordinates,
+                                 handleTypeChange,
+                                 handleDeleteCoordinate,
+                                 handleCalculateRoutes,
+                                 setAlgorithm,
+                                 setVehicle,
+                                 setTypeOfAlgo,
+                                 vehicle,
+                                 typeOfAlgo,
+                                 algorithm
+                             }: Props) => {
 
 
-const SelectedCoordinates = ({coordinates, handleTypeChange, handleDeleteCoordinate}: Props) => {
+    const onAlgoClick: MenuProps['onClick'] = ({key}) => {
+        setAlgorithm(key);
+    };
+
+    const onVehicleClick: MenuProps['onClick'] = ({key}) => {
+        setVehicle(key);
+    };
+
+    const onAlgoTypeClick: MenuProps['onClick'] = ({key}) => {
+        setTypeOfAlgo(key);
+    };
+
+
     return (
         <div className="flex-1">
-            <div className="flex justify-between flex-wrap items-center h-20">
-                <h1 className="text-3xl font-bold">Coordinates</h1>
-                <Button type={'primary'} size={'large'} className={'min-w-40 h-9'}>SEND</Button>
+            <div className="flex flex-col gap-4 mb-2">
+                <div className={'flex justify-between flex-wrap gap-2'}>
+                    <h1 className="text-3xl font-bold">Coordinates</h1>
+                    <Button type={'primary'}
+                            size={'large'}
+                            className={'min-w-40 h-9'}
+                            disabled={coordinates.length === 0}
+                            onClick={handleCalculateRoutes}>SEND</Button>
+                </div>
+                <div className={'flex justify-between flex-wrap gap-2'}>
+                    <Dropdown
+                        menu={{
+                            items: algoMenuItems,
+                            onClick: onAlgoClick,
+                            selectable: true,
+                        }}
+                        trigger={["click"]}
+                    >
+                        <div className={`bg-[#282828] p-2 rounded w-48 pl-4 h-full`}>
+                            {algorithm}
+                        </div>
+                    </Dropdown>
+                    <Dropdown
+                        menu={{
+                            items: vehicleMenuItems,
+                            onClick: onVehicleClick,
+                            selectable: true,
+                        }}
+                        trigger={["click"]}
+                    >
+                        <div className={`bg-[#282828] p-2 rounded w-48 pl-4 h-full`}>
+                            {vehicle}
+                        </div>
+                    </Dropdown>
+                    <Dropdown
+                        menu={{
+                            items: algoTypeMenuItems,
+                            onClick: onAlgoTypeClick,
+                            selectable: true,
+                        }}
+                        trigger={["click"]}
+                    >
+                        <div className={`bg-[#282828] p-2 rounded w-48 pl-4 h-full`}>
+                            {typeOfAlgo}
+                        </div>
+                    </Dropdown>
+                </div>
+
             </div>
 
             <div className="border border-solid border-[#515151] rounded-md  px-2">

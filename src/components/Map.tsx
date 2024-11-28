@@ -1,9 +1,6 @@
 import {MapContainer, Marker, Polyline, Popup, TileLayer, useMapEvents} from "react-leaflet";
 import React, {useState} from "react";
 import {API_KEY, Coordinate, Road} from "../types.ts";
-import Search from "antd/lib/input/Search";
-import {darkTheme} from "../theme.ts";
-import {Button, ConfigProvider} from "antd";
 import L from "leaflet";
 
 
@@ -34,6 +31,7 @@ const Map = ({coordinates, roads, handleAddCoordinate}: Props) => {
         return null;
     };
 
+
     const handleSearchLocation = async () => {
         try {
             const response = await fetch(
@@ -54,20 +52,20 @@ const Map = ({coordinates, roads, handleAddCoordinate}: Props) => {
     return (
         <div className={'flex-1 min-w-[340px]'}>
 
-            <ConfigProvider theme={darkTheme}>
-                <div className="flex w-full h-20 items-center">
-                    <Search
-                        placeholder="input search text"
-                        allowClear
-                        enterButton={
-                            <Button type="primary" size="large">Search</Button>
-                        }
-                        size="large"
-                        onChange={e => setSearch(e.target.value)}
-                        onSearch={handleSearchLocation}
-                    />
-                </div>
-            </ConfigProvider>
+            {/*<ConfigProvider theme={darkTheme}>*/}
+            {/*    <div className="flex w-full h-20 items-center">*/}
+            {/*        <Search*/}
+            {/*            placeholder="input search text"*/}
+            {/*            allowClear*/}
+            {/*            enterButton={*/}
+            {/*                <Button type="primary" size="large">Search</Button>*/}
+            {/*            }*/}
+            {/*            size="large"*/}
+            {/*            onChange={e => setSearch(e.target.value)}*/}
+            {/*            onSearch={handleSearchLocation}*/}
+            {/*        />*/}
+            {/*    </div>*/}
+            {/*</ConfigProvider>*/}
             <div
                 className="rounded-md overflow-hidden border-4 border-solid border-[#91898C] hover:border-[#3E3E3E] transition-all duration-200">
                 <MapContainer

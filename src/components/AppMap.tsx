@@ -1,6 +1,6 @@
 import {MapContainer, Marker, Polyline, Popup, TileLayer, useMapEvents} from "react-leaflet";
-import React, {useState} from "react";
-import {API_KEY, Coordinate, Road} from "../types.ts";
+import React from "react";
+import {Coordinate, Road} from "../types.ts";
 import L from "leaflet";
 
 
@@ -18,8 +18,8 @@ const customIcon = (type: 'warehouse' | 'client') =>
         popupAnchor: [0, -42], // Position the popup
     });
 
-const Map = ({coordinates, roads, handleAddCoordinate}: Props) => {
-    const [search, setSearch] = useState<string>("");
+const AppMap = ({coordinates, roads, handleAddCoordinate}: Props) => {
+    // const [search] = useState<string>("");
 
     const MapClickHandler: React.FC = () => {
         useMapEvents({
@@ -32,22 +32,22 @@ const Map = ({coordinates, roads, handleAddCoordinate}: Props) => {
     };
 
 
-    const handleSearchLocation = async () => {
-        try {
-            const response = await fetch(
-                `https://catalog.api.2gis.com/3.0/items/geocode?q=${encodeURIComponent(
-                    search
-                )}&key=${API_KEY}`
-            );
-            const data = await response.json();
-            const point = data.result.items[0]?.point;
-            if (point) {
-                handleAddCoordinate(point.lat, point.lon);
-            }
-        } catch (err) {
-            alert("Ошибка поиска местоположения.");
-        }
-    };
+    // const handleSearchLocation = async () => {
+    //     try {
+    //         const response = await fetch(
+    //             `https://catalog.api.2gis.com/3.0/items/geocode?q=${encodeURIComponent(
+    //                 search
+    //             )}&key=${API_KEY}`
+    //         );
+    //         const data = await response.json();
+    //         const point = data.result.items[0]?.point;
+    //         if (point) {
+    //             handleAddCoordinate(point.lat, point.lon);
+    //         }
+    //     } catch (err) {
+    //         alert("Ошибка поиска местоположения.");
+    //     }
+    // };
 
     return (
         <div className={'flex-1 min-w-[340px]'}>
@@ -91,7 +91,6 @@ const Map = ({coordinates, roads, handleAddCoordinate}: Props) => {
                     ))}
 
                     {roads.map((road, index) => {
-                        console.log(road)
                         return (
                             <Polyline
                                 key={index}
@@ -99,7 +98,9 @@ const Map = ({coordinates, roads, handleAddCoordinate}: Props) => {
                                     [road.start.lat, road.start.lon],
                                     [road.end.lat, road.end.lon],
                                 ]}
-                                color="blue"
+                                pathOptions={{
+                                    color: road.highlight ? 'green' : 'blue',
+                                }}
                             />
                         )
                     })}
@@ -109,4 +110,4 @@ const Map = ({coordinates, roads, handleAddCoordinate}: Props) => {
     );
 };
 
-export default Map;
+export default AppMap;

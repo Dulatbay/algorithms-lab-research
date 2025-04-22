@@ -10,7 +10,8 @@ export interface Road {
     end: Coordinate;
     distance: number;
     duration: number;
+    highlight?: boolean;
 }
 
 
-export const API_KEY = "923efe7e-ec05-4852-ace5-c773b8555df1";
+export const API_KEY = "20309b3b-a341-4363-89ae-81a622d8daf4";

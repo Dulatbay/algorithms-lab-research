@@ -21,6 +21,10 @@ const algoMenuItems: MenuProps['items'] = [
     {
         key: '2Gis Api',
         label: '2Gis Api'
+    },
+    {
+        key: 'CSS 228 Api',
+        label: 'CSS 228 Api'
     }
 ]
 
